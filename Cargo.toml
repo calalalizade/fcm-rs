@@ -1,5 +1,5 @@
 [package]
-name = "fcm_rust"
+name = "fcm-rs"
 version = "0.1.0"
 authors = ["Jalal Alizade"] 
 repository = "https://github.com/calalalizade/fcm-rs"
