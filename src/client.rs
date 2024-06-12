@@ -1,3 +1,4 @@
+//! Provides the `FcmClient` struct for interacting with the FCM API.
 use reqwest::Client;
 use yup_oauth2::authenticator::Authenticator;
 use yup_oauth2::hyper::client::HttpConnector;
@@ -7,19 +8,44 @@ use yup_oauth2::{ ServiceAccountAuthenticator, read_service_account_key };
 use crate::error::FcmError;
 use crate::models::{ FcmSendRequest, FcmSendResponse, Message };
 
+/// Firebase Cloud Messaging (FCM) client.
 pub struct FcmClient {
+    /// Authenticator for OAuth2.
     auth: Authenticator<HttpsConnector<HttpConnector>>,
+    /// HTTP client for making requests.
     http_client: Client,
-    project_id: String, // Add project ID
+    /// Firebase project ID.
+    project_id: String,
 }
 
 impl FcmClient {
+    /// Creates a new `FcmClient` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `service_account_key_path` - Path to the service account key JSON file.
+    /// * `project_id` - Firebase project ID.
+    ///
+    /// # Errors
+    ///
+    /// Returns an `FcmError` if the service account key cannot be read,
+    /// the authenticator cannot be built, or any other error occurs during initialization.
     pub async fn new(service_account_key_path: &str, project_id: String) -> Result<Self, FcmError> {
         let secret = read_service_account_key(service_account_key_path).await?;
         let auth = ServiceAccountAuthenticator::builder(secret).build().await?;
         Ok(Self { auth, http_client: Client::new(), project_id })
     }
 
+    /// Sends an FCM message.
+    ///
+    /// # Arguments
+    ///
+    /// * `message` - The `Message` to send.
+    ///
+    /// # Errors
+    ///
+    /// Returns an `FcmError` if there's an issue with the request, authentication,
+    /// JSON (de)serialization, or any other error during the sending process.
     pub async fn send(&self, message: Message) -> Result<FcmSendResponse, FcmError> {
         let url = format!(
             "https://fcm.googleapis.com/v1/projects/{}/messages:send",
@@ -30,7 +56,6 @@ impl FcmClient {
 
         let request = FcmSendRequest {
             message,
-            // Add other request parameters (e.g., validate_only) if needed
         };
 
         let response = self.http_client

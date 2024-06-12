@@ -1,11 +1,26 @@
+//! Error types for FCM operations.
 use thiserror::Error;
 
+/// Represents errors that can occur while using the FCM client.
 #[derive(Error, Debug)]
 pub enum FcmError {
-    #[error("Request failed: {0}")] RequestError(#[from] reqwest::Error),
-    #[error("Authentication failed: {0}")] AuthError(String),
-    #[error("JSON serialization/deserialization failed: {0}")] JsonError(#[from] serde_json::Error),
-    #[error("OAuth2 error: {0}")] OAuth2Error(#[from] yup_oauth2::Error),
-    #[error("IO error: {0}")] // <-- New variant for std::io::Error
+    /// An error occurred during an HTTP request.
+    #[error("Request failed: {0}")]
+    RequestError(#[from] reqwest::Error),
+
+    /// An error occurred during authentication.
+    #[error("Authentication failed: {0}")]
+    AuthError(String),
+
+    /// An error occurred during JSON serialization or deserialization.
+    #[error("JSON serialization/deserialization failed: {0}")]
+    JsonError(#[from] serde_json::Error),
+
+    /// An error occurred related to OAuth2.
+    #[error("OAuth2 error: {0}")]
+    OAuth2Error(#[from] yup_oauth2::Error),
+
+    /// An error occurred during file I/O operations.
+    #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 }
