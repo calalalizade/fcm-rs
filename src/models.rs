@@ -1,5 +1,5 @@
 //! Data models for FCM messages, requests, and responses.
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 
 /// Represents an FCM message to be sent.
 #[derive(Serialize, Deserialize, Debug)]
@@ -31,9 +31,39 @@ pub struct FcmSendRequest {
     // Add other request parameters (e.g., validate_only: bool) if needed
 }
 
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum FcmSendResult {
+    Success(FcmSuccessResponse),
+    Error(FcmErrorResponse),
+}
+
 /// Represents a response from the FCM API after sending a message.
 #[derive(Deserialize, Debug)]
-pub struct FcmSendResponse {
+pub struct FcmSuccessResponse {
     /// Message ID if the message was successfully processed
     pub name: String,
+}
+
+/// Represents an error from the FCM API after sending a message.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FcmErrorResponse {
+    /// Error if the message was unsuccessfully processed
+    pub error: ErrorResponse,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ErrorResponse {
+    pub code: usize,
+    pub message: String,
+    pub status: String,
+    pub details: Vec<ErrorResponseDetail>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ErrorResponseDetail {
+    #[serde(rename = "type")]
+    pub ty: String,
+    #[serde(rename = "errorCode")]
+    pub error_code: String,
 }
