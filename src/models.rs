@@ -1,5 +1,6 @@
 //! Data models for FCM messages, requests, and responses.
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 /// Represents an FCM message to be sent.
 #[derive(Serialize, Deserialize, Debug)]
@@ -57,13 +58,5 @@ pub struct ErrorResponse {
     pub code: usize,
     pub message: String,
     pub status: String,
-    pub details: Vec<ErrorResponseDetail>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ErrorResponseDetail {
-    #[serde(rename = "type")]
-    pub ty: String,
-    #[serde(rename = "errorCode")]
-    pub error_code: String,
+    pub details: Vec<Value>,
 }
