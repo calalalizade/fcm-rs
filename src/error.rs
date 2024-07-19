@@ -1,7 +1,6 @@
 //! Error types for FCM operations.
-use thiserror::Error;
-
 use crate::models::FcmErrorResponse;
+use thiserror::Error;
 
 /// Represents errors that can occur while using the FCM client.
 #[derive(Error, Debug)]
@@ -26,7 +25,7 @@ pub enum FcmError {
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 
-    // FCM responded with an error.
+    // An error in the response from FCM.
     #[error("Response error: {0}")]
     ResponseError(FcmErrorResponse),
 }
