@@ -5,7 +5,7 @@ authors = ["Jalal Alizade"]
 repository = "https://github.com/calalalizade/fcm-rs"
 description = "A Rust crate for easy interaction with Firebase Cloud Messaging API (V1)."
 keywords = ["firebase", "fcm", "push-notifications", "rust"]
-categories = ["web-programming", "messaging", "cloud", "api-bindings"]
+categories = ["web-programming", "api-bindings"]
 license = "MIT"
 edition = "2021"
 
