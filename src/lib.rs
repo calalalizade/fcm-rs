@@ -8,6 +8,6 @@
 //! * **Automatic Token Management:** Handles access token retrieval and refreshing seamlessly using `yup-oauth2`.
 //! * **Error Handling:** Includes comprehensive error handling for API requests, authentication, and deserialization.
 
+pub mod client;
 pub mod error; // Custom error types for FCM interactions
-pub mod models; // Data structures for FCM messages, responses, etc.
-pub mod client; // The FcmClient struct and methods to interact with FCM
+pub mod models; // Data structures for FCM messages, responses, etc. // The FcmClient struct and methods to interact with FCM

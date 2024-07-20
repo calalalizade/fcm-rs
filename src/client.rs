@@ -1,12 +1,13 @@
 //! Provides the `FcmClient` struct for interacting with the FCM API.
+use crate::error::FcmError;
+use crate::models::{FcmErrorResponse, FcmSendRequest, FcmSendResult, FcmSuccessResponse, Message};
 use reqwest::Client;
+use serde_json::json;
+use std::fmt::Display;
 use yup_oauth2::authenticator::Authenticator;
 use yup_oauth2::hyper::client::HttpConnector;
 use yup_oauth2::hyper_rustls::HttpsConnector;
-use yup_oauth2::{ ServiceAccountAuthenticator, read_service_account_key };
-
-use crate::error::FcmError;
-use crate::models::{ FcmSendRequest, FcmSendResponse, Message };
+use yup_oauth2::{read_service_account_key, ServiceAccountAuthenticator};
 
 /// Firebase Cloud Messaging (FCM) client.
 pub struct FcmClient {
@@ -24,16 +25,27 @@ impl FcmClient {
     /// # Arguments
     ///
     /// * `service_account_key_path` - Path to the service account key JSON file.
-    /// * `project_id` - Firebase project ID.
     ///
     /// # Errors
     ///
     /// Returns an `FcmError` if the service account key cannot be read,
     /// the authenticator cannot be built, or any other error occurs during initialization.
-    pub async fn new(service_account_key_path: &str, project_id: String) -> Result<Self, FcmError> {
+    pub async fn new(service_account_key_path: &str) -> Result<Self, FcmError> {
         let secret = read_service_account_key(service_account_key_path).await?;
+        let project_id = match secret.project_id {
+            Some(ref id) => id.clone(),
+            None => {
+                return Err(FcmError::AuthError(
+                    "Service account key JSON file missing project ID".to_string(),
+                ))
+            }
+        };
         let auth = ServiceAccountAuthenticator::builder(secret).build().await?;
-        Ok(Self { auth, http_client: Client::new(), project_id })
+        Ok(Self {
+            auth,
+            http_client: Client::new(),
+            project_id,
+        })
     }
 
     /// Sends an FCM message.
@@ -45,31 +57,50 @@ impl FcmClient {
     /// # Errors
     ///
     /// Returns an `FcmError` if there's an issue with the request, authentication,
-    /// JSON (de)serialization, or any other error during the sending process.
-    pub async fn send(&self, message: Message) -> Result<FcmSendResponse, FcmError> {
+    /// JSON (de)serialization, the response, or any other error during the sending process.
+    pub async fn send(&self, message: Message) -> Result<FcmSuccessResponse, FcmError> {
         let url = format!(
             "https://fcm.googleapis.com/v1/projects/{}/messages:send",
             self.project_id
         );
 
-        let token = self.auth.token(&["https://www.googleapis.com/auth/firebase.messaging"]).await?;
+        let token = self
+            .auth
+            .token(&["https://www.googleapis.com/auth/firebase.messaging"])
+            .await?;
 
-        let request = FcmSendRequest {
-            message,
-        };
+        let request = FcmSendRequest { message };
 
-        let response = self.http_client
+        let response = self
+            .http_client
             .post(url)
-            .header("Authorization", format!("Bearer {:?}", token.token().unwrap()))
+            .header(
+                "Authorization",
+                format!("Bearer {:?}", token.token().unwrap()),
+            )
             .json(&request) // Send the request object
-            .send().await?;
+            .send()
+            .await?;
 
-        // let response_text = response.text().await?; // Get raw response
-        // println!("Raw FCM response: {}", response_text); // Print for debugging
+        response
+            .json::<FcmSendResult>()
+            .await
+            .map_err(FcmError::from)?
+            .into()
+    }
+}
 
-        response.json::<FcmSendResponse>().await.map_err(FcmError::from)
+impl Into<Result<FcmSuccessResponse, FcmError>> for FcmSendResult {
+    fn into(self) -> Result<FcmSuccessResponse, FcmError> {
+        match self {
+            FcmSendResult::Success(success) => Ok(success),
+            FcmSendResult::Error(error) => Err(FcmError::ResponseError(error)),
+        }
+    }
+}
 
-        // let parsed_response: Result<FcmSendResponse, _> = serde_json::from_str(&response_text);
-        // parsed_response.map_err(FcmError::from)
+impl Display for FcmErrorResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", json!(&self))
     }
 }

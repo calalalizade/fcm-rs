@@ -1,6 +1,6 @@
 [package]
 name = "fcm-rs"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jalal Alizade"] 
 repository = "https://github.com/calalalizade/fcm-rs"
 description = "A Rust crate for easy interaction with Firebase Cloud Messaging API (V1)."

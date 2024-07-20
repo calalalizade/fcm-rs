@@ -9,7 +9,7 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-fcm_rust = "0.1.0"
+fcm_rust = "0.2.0"
 ```
 
 ## Usage
@@ -22,10 +22,9 @@ use fcm_rust::{ client::FcmClient, models::{ Message, Notification } };
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service_account_path = "path/to/service_account";
-    let project_id = "your_project_id".to_string();
 
     // Create a new FCM client
-    let client = FcmClient::new(service_account_path, project_id).await?;
+    let client = FcmClient::new(service_account_path).await?;
 
     // Define the message with the target device token and notification details
     let message = Message {
