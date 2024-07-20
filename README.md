@@ -9,7 +9,7 @@ Add this crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-fcm_rust = "0.2.0"
+fcm-rs = "0.2.0"
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ fcm_rust = "0.2.0"
 Below is an example of how to use this crate to send a notification:
 
 ```rust
-use fcm_rust::{ client::FcmClient, models::{ Message, Notification } };
+use fcm_rs::{ client::FcmClient, models::{ Message, Notification } };
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
